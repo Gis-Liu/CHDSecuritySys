@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>CURD应用</title>
+    <link rel="stylesheet" href="./easyui/themes/default/easyui.css">
+    <link rel="stylesheet" href="./easyui/themes/icon.css">
+    <script src="./easyui/jquery.min.js"></script>
+    <script src="./easyui/jquery.easyui.min.js"></script>
+</head>
+
+<body>
+    <div>
+        <table id="stafftb" title="员工表" singleSelect="true" class="easyui-datagrid" url="./select" rownumbers="true" toolbar="#toolbar"
+            width="335px">
+            <thead>
+                <tr>
+                    <th field="idstaff">员工号</th>
+                    <th field="name">姓名</th>
+                    <th field="department">部门</th>
+                    <th field="sex">性别</th>
+                    <th field="tel">联系方式</th>
+                </tr>
+            </thead>
+        </table>
+        <div id="toolbar">
+            <a href="#" class="easyui-linkbutton" iconCls="icon-add" onclick="newStaff()" plain="true">添加员工</a>
+            <a href="#" class="easyui-linkbutton" iconCls="icon-edit" onclick="editStaff()" plain="true">编辑员工</a>
+            <a href="#" class="easyui-linkbutton" iconCls="icon-remove" onclick="removeStaff()" plain="true">删除员工</a>
+        </div>
+    </div>
+    <div id="dlg" class="easyui-dialog" closed="true" button="#dlgbtn">
+        <div class="ftitle">员工信息</div>
+        <form id="fm" method="POST">
+            <div class="fitem">
+                <label for="name">姓名：</label>
+                <input name="name" class="easyui-validatebox" required="true">
+            </div>
+            <div class="fitem">
+                <label for="department">员工部门：</label>
+                <select name="department" id="department" class="easyui-combobox">
+                    <option value="	环境保护局"> 环境保护局</option>
+                    <option value="国土资源局">国土资源局</option>
+                    <option value="城市建设局">城市建设局</option>
+                </select>
+            </div>
+            <div class="fitem">
+                <label for="sex">性别</label>
+                <input type="radio" name="sex" value="男">男
+                <input type="radio" name="sex" value="女">女
+            </div>
+            <div class="fitem">
+                <label for="tel">联系方式</label>
+                <input name="tel" class="easyui-validatebox" required="true">
+            </div>
+        </form>
+        <div id="dlgbtn">
+            <button class="easyui-linkbutton" iconCls="icon-ok" onclick="saveStaff()">保存</button>
+            <button class="easyui-linkbutton" iconCls="icon-cancel" onclick="cancel()">取消</button>
+        </div>
+    </div>
+    <script>
+        var newStaff = function () {
+            $("#dlg").dialog('open').dialog('setTitle', '添加员工');
+            $("#fm").form('clear');
+            url = './Add'
+
+        }
+
+        var editStaff = function () {
+            var row = $('#stafftb').datagrid('getSelected');
+            if (row) {
+                $('#dlg').dialog('open').dialog('setTitle', '修改信息');
+                $('#fm').form('load', row);
+                url = './editStaff?idstaff=' + row.idstaff;
+            }
+
+        }
+
+        var saveStaff = function () {
+            $('#fm').form('submit', {
+                url: url,
+                onSubmit: validate,
+                success: function (res) {
+                    var res = eval('(' + res + ')');
+                    if (res.errorMsg) {
+                        $.messager.show({
+                            title: 'Error',
+                            message: res.errorMsg
+                        });
+                    } else {
+                        $('#dlg').dialog('close');
+                        $('#stafftb').datagrid('reload');
+                    }
+
+                }
+            })
+        }
+
+        var validate = function () {
+            return $("#fm").form('validate');
+        }
+
+        var removeStaff = function () {
+            var row = $('#stafftb').datagrid('getSelected');
+            if (row) {
+                $.messager.confirm('删除员工', '你确定删除此员工吗？', function (r) {
+                    if (r) {
+                        $.post('./delstaff', { 'idstaff': row.idstaff }, delremove
+                        , 'json');
+            }
+        });
+            }
+        }
+
+        var cancel = function () {
+            $('#dlg').dialog('close');
+        }
+
+        var delremove = function (result) {
+            console.log("del response");
+            console.log(result);
+            console.log(result.statu);
+            if (result.statu == 0) {
+                $('#stafftb').datagrid('reload');
+            } else {
+                $.messager.show({
+                    title: "Error",
+                    msg: result.errMsg
+                });
+            }
+        }
+    </script>
+
+</body>
+
+</html>
